@@ -621,10 +621,9 @@ class Sketch {
         window.addEventListener("resize", this.resize.bind(this));
     }
     addObjects() {
-        // this.geometry = new THREE.BoxGeometry(0.2, 0.2, 0.2);
-        this.geometry = new _three.PlaneGeometry(0.5, 0.5);
-        // this.material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+        this.geometry = new _three.PlaneGeometry(0.5, 0.5, 100, 100);
         this.material = new _three.ShaderMaterial({
+            wireframe: true,
             uniforms: {
                 time: {
                     value: 1.0
@@ -641,8 +640,9 @@ class Sketch {
     }
     render() {
         this.time += 0.05;
-        this.mesh.rotation.x += 0.01;
-        this.mesh.rotation.y += 0.01;
+        this.material.uniforms.time.value = this.time;
+        this.mesh.rotation.x = this.time / 2000;
+        this.mesh.rotation.y = this.time / 1000;
         this.renderer.render(this.scene, this.camera);
         requestAnimationFrame(this.render.bind(this));
     }
@@ -33135,10 +33135,10 @@ function interceptControlUp(event) {
 }
 
 },{"three":"ktPTu","@parcel/transformer-js/src/esmodule-helpers.js":"fJZut"}],"6yofB":[function(require,module,exports) {
-module.exports = "#define GLSLIFY 1\nvoid main() {\n  gl_FragColor = vec4( 1.,1.,0.,1.);\n}";
+module.exports = "#define GLSLIFY 1\nvarying float pulse;\n\nvoid main() {\n  gl_FragColor = vec4( 1.,pulse,0.,1.);\n}";
 
 },{}],"fWka7":[function(require,module,exports) {
-module.exports = "#define GLSLIFY 1\nvoid main(){\n  gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );\n}";
+module.exports = "#define GLSLIFY 1\nuniform float time;\nvarying float pulse;\n\nvoid main(){\n  vec3 newPosition = position;\n  newPosition.z = 0.05*sin(length(position)*30. + time);\n  pulse = 2.*newPosition.z;\n  gl_Position = projectionMatrix * modelViewMatrix * vec4( newPosition, 1.0 );\n}";
 
 },{}]},["4WeDz","igcvL"], "igcvL", "parcelRequire94c2")
 
