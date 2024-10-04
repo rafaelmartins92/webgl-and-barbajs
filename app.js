@@ -55,25 +55,28 @@ export default class Sketch {
   }
 
   addObjects() {
-    this.geometry = new THREE.PlaneGeometry(500, 500, 100, 100);
+    this.geometry = new THREE.PlaneGeometry(300, 300, 100, 100);
     this.material = new THREE.ShaderMaterial({
       // wireframe: true,
       uniforms: {
         time: { value: 1.0 },
+        uProgress: { value: 1.0 },
         uTexture: { value: new THREE.TextureLoader().load(textureTest) },
         resolution: { value: new THREE.Vector2() },
       },
       vertexShader: vertex,
       fragmentShader: fragment,
     });
-
     this.mesh = new THREE.Mesh(this.geometry, this.material);
     this.scene.add(this.mesh);
+    this.mesh.position.x = 300;
+    this.mesh.rotation.z = 0.5;
   }
 
   render() {
     this.time += 0.05;
     this.material.uniforms.time.value = this.time;
+    this.material.uniforms.uProgress.value = this.settings.progress;
     this.mesh.rotation.x = this.time / 2000;
     this.mesh.rotation.y = this.time / 1000;
 
