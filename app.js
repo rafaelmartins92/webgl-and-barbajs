@@ -3,6 +3,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import fragment from './shaders/fragment.glsl';
 import vertex from './shaders/vertex.glsl';
 import textureTest from './texture.png';
+import * as dat from 'dat.gui';
 
 export default class Sketch {
   constructor(options) {
@@ -26,10 +27,19 @@ export default class Sketch {
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
 
     this.time = 0;
+    this.setupSettings();
     this.resize();
     this.addObjects();
     this.render();
     this.setupResize();
+  }
+
+  setupSettings() {
+    this.settings = {
+      progress: 0
+    }
+    this.gui = new dat.GUI();
+    this.gui.add(this.settings,"progress",0,1,0.001);
   }
 
   resize() {
