@@ -10,5 +10,5 @@ void main(){
 
   vec4 finalState = mix(defaultState,fullScreenState,uProgress);
 
-  gl_Position = projectionMatrix * viewMatrix * fullScreenState;
+  gl_Position = projectionMatrix * finalState;
 } 
