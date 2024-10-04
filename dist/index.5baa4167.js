@@ -599,11 +599,15 @@ class Sketch {
         this.container = options.domElement;
         this.width = this.container.offsetWidth;
         this.height = this.container.offsetHeight;
-        this.camera = new _three.PerspectiveCamera(70, this.width / this.height, 0.01, 10);
-        this.camera.position.z = 1;
+        this.camera = new _three.PerspectiveCamera(80, this.width / this.height, 10, 1000);
+        this.camera.position.z = 600;
+        this.camera.fov = 2 * Math.atan(this.height / 2 / 600) * 180 / Math.PI;
         this.scene = new _three.Scene();
-        this.renderer = new _three.WebGLRenderer();
-        this.renderer.setPixelRatio(2);
+        this.renderer = new _three.WebGLRenderer({
+            antialias: true,
+            alpha: true
+        });
+        this.renderer.setPixelRatio(window.devicePixelRatio);
         this.container.appendChild(this.renderer.domElement);
         this.controls = new (0, _orbitControlsJs.OrbitControls)(this.camera, this.renderer.domElement);
         this.time = 0;
@@ -623,8 +627,7 @@ class Sketch {
         window.addEventListener("resize", this.resize.bind(this));
     }
     addObjects() {
-        this.geometry = new _three.PlaneGeometry(0.5, 0.5, 100, 100);
-        this.geometry = new _three.SphereGeometry(0.5, 200, 200);
+        this.geometry = new _three.PlaneGeometry(500, 500, 100, 100);
         this.material = new _three.ShaderMaterial({
             // wireframe: true,
             uniforms: {
@@ -33141,10 +33144,10 @@ function interceptControlUp(event) {
 }
 
 },{"three":"ktPTu","@parcel/transformer-js/src/esmodule-helpers.js":"fJZut"}],"6yofB":[function(require,module,exports) {
-module.exports = "#define GLSLIFY 1\nuniform float time;\nuniform sampler2D uTexture;\n\nvarying float pulse;\nvarying vec2 vUv;\nvarying vec3 vNormal;\n\nvoid main() {\n  vec4 myimage = texture(uTexture,vUv + 0.01*sin(vUv*20. + time));\n  float sinePulse = (1. + sin(vUv.x*50. - time))*0.5;\n  gl_FragColor = vec4(vUv,0.,1.);\n  gl_FragColor = vec4(sinePulse,0.,0.,1.);\n  gl_FragColor = myimage;\n  gl_FragColor = vec4(pulse,0,0, 1.);\n}";
+module.exports = "#define GLSLIFY 1\nuniform float time;\n\nvoid main() {\n  gl_FragColor = vec4(1.,0,0,1.);\n}";
 
 },{}],"fWka7":[function(require,module,exports) {
-module.exports = "#define GLSLIFY 1\nuniform float time;\n\nvarying float pulse;\nvarying vec2 vUv;\nvarying vec3 vNormal;\n\n//	Simplex 4D Noise \n//	by Ian McEwan, Stefan Gustavson (https://github.com/stegu/webgl-noise)\n//\nvec4 permute(vec4 x){return mod(((x*34.0)+1.0)*x, 289.0);}\nfloat permute(float x){return floor(mod(((x*34.0)+1.0)*x, 289.0));}\nvec4 taylorInvSqrt(vec4 r){return 1.79284291400159 - 0.85373472095314 * r;}\nfloat taylorInvSqrt(float r){return 1.79284291400159 - 0.85373472095314 * r;}\n\nvec4 grad4(float j, vec4 ip){\n  const vec4 ones = vec4(1.0, 1.0, 1.0, -1.0);\n  vec4 p,s;\n\n  p.xyz = floor( fract (vec3(j) * ip.xyz) * 7.0) * ip.z - 1.0;\n  p.w = 1.5 - dot(abs(p.xyz), ones.xyz);\n  s = vec4(lessThan(p, vec4(0.0)));\n  p.xyz = p.xyz + (s.xyz*2.0 - 1.0) * s.www; \n\n  return p;\n}\n\nfloat snoise(vec4 v){\n  const vec2  C = vec2( 0.138196601125010504,  // (5 - sqrt(5))/20  G4\n                        0.309016994374947451); // (sqrt(5) - 1)/4   F4\n// First corner\n  vec4 i  = floor(v + dot(v, C.yyyy) );\n  vec4 x0 = v -   i + dot(i, C.xxxx);\n\n// Other corners\n\n// Rank sorting originally contributed by Bill Licea-Kane, AMD (formerly ATI)\n  vec4 i0;\n\n  vec3 isX = step( x0.yzw, x0.xxx );\n  vec3 isYZ = step( x0.zww, x0.yyz );\n//  i0.x = dot( isX, vec3( 1.0 ) );\n  i0.x = isX.x + isX.y + isX.z;\n  i0.yzw = 1.0 - isX;\n\n//  i0.y += dot( isYZ.xy, vec2( 1.0 ) );\n  i0.y += isYZ.x + isYZ.y;\n  i0.zw += 1.0 - isYZ.xy;\n\n  i0.z += isYZ.z;\n  i0.w += 1.0 - isYZ.z;\n\n  // i0 now contains the unique values 0,1,2,3 in each channel\n  vec4 i3 = clamp( i0, 0.0, 1.0 );\n  vec4 i2 = clamp( i0-1.0, 0.0, 1.0 );\n  vec4 i1 = clamp( i0-2.0, 0.0, 1.0 );\n\n  //  x0 = x0 - 0.0 + 0.0 * C \n  vec4 x1 = x0 - i1 + 1.0 * C.xxxx;\n  vec4 x2 = x0 - i2 + 2.0 * C.xxxx;\n  vec4 x3 = x0 - i3 + 3.0 * C.xxxx;\n  vec4 x4 = x0 - 1.0 + 4.0 * C.xxxx;\n\n// Permutations\n  i = mod(i, 289.0); \n  float j0 = permute( permute( permute( permute(i.w) + i.z) + i.y) + i.x);\n  vec4 j1 = permute( permute( permute( permute (\n             i.w + vec4(i1.w, i2.w, i3.w, 1.0 ))\n           + i.z + vec4(i1.z, i2.z, i3.z, 1.0 ))\n           + i.y + vec4(i1.y, i2.y, i3.y, 1.0 ))\n           + i.x + vec4(i1.x, i2.x, i3.x, 1.0 ));\n// Gradients\n// ( 7*7*6 points uniformly over a cube, mapped onto a 4-octahedron.)\n// 7*7*6 = 294, which is close to the ring size 17*17 = 289.\n\n  vec4 ip = vec4(1.0/294.0, 1.0/49.0, 1.0/7.0, 0.0) ;\n\n  vec4 p0 = grad4(j0,   ip);\n  vec4 p1 = grad4(j1.x, ip);\n  vec4 p2 = grad4(j1.y, ip);\n  vec4 p3 = grad4(j1.z, ip);\n  vec4 p4 = grad4(j1.w, ip);\n\n// Normalise gradients\n  vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1), dot(p2, p2), dot(p3,p3)));\n  p0 *= norm.x;\n  p1 *= norm.y;\n  p2 *= norm.z;\n  p3 *= norm.w;\n  p4 *= taylorInvSqrt(dot(p4,p4));\n\n// Mix contributions from the five corners\n  vec3 m0 = max(0.6 - vec3(dot(x0,x0), dot(x1,x1), dot(x2,x2)), 0.0);\n  vec2 m1 = max(0.6 - vec2(dot(x3,x3), dot(x4,x4)            ), 0.0);\n  m0 = m0 * m0;\n  m1 = m1 * m1;\n  return 49.0 * ( dot(m0*m0, vec3( dot( p0, x0 ), dot( p1, x1 ), dot( p2, x2 )))\n               + dot(m1*m1, vec2( dot( p3, x3 ), dot( p4, x4 ) ) ) ) ;\n\n}\n\nvoid main(){\n  vUv = uv;\n  vNormal = normal;\n  vec3 newPosition = position;\n  float noise = snoise(vec4(normal*40., time*0.1));\n  // newPosition.z = 0.05*sin(length(position)*30. + time);\n  newPosition = newPosition + 0.1*normal*noise;\n  pulse = noise;\n  gl_Position = projectionMatrix * modelViewMatrix * vec4( newPosition, 1.0 );\n}";
+module.exports = "#define GLSLIFY 1\nuniform float time;\n\nvoid main(){\n  gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );\n}";
 
 },{}],"ik3Aw":[function(require,module,exports) {
 module.exports = require("d36b4277a2dab470").getBundleURL("1G2bZ") + "texture.ce44eba2.png" + "?" + Date.now();
