@@ -4,6 +4,7 @@ import fragment from './shaders/fragment.glsl';
 import vertex from './shaders/vertex.glsl';
 import textureTest from './texture.png';
 import * as dat from 'dat.gui';
+import gsap from 'gsap';
 
 export default class Sketch {
   constructor(options) {
@@ -60,15 +61,23 @@ export default class Sketch {
       // wireframe: true,
       uniforms: {
         time: { value: 1.0 },
-        uProgress: { value: 1.0 },
+        uProgress: { value: 0 },
         uTexture: { value: new THREE.TextureLoader().load(textureTest) },
         uTextureSize: { value: new THREE.Vector2(100,100) },
+        uCorners: { value: new THREE.Vector4(0,0,0,0) },
         uResolution: { value: new THREE.Vector2(this.width,this.height) },
         uQuadSize: { value: new THREE.Vector2(300,300) },
       },
       vertexShader: vertex,
       fragmentShader: fragment,
     });
+
+    this.tl = gsap.timeline()
+      .to(this.material.uniforms.uCorners.value, {x:1, duration: 1})
+      .to(this.material.uniforms.uCorners.value, {y:1, duration: 1},0.2)
+      .to(this.material.uniforms.uCorners.value, {z:1, duration: 1},0.4)
+      .to(this.material.uniforms.uCorners.value, {w:1, duration: 1},0.6)
+
     this.mesh = new THREE.Mesh(this.geometry, this.material);
     this.scene.add(this.mesh);
     this.mesh.position.x = 300;
@@ -78,7 +87,8 @@ export default class Sketch {
   render() {
     this.time += 0.05;
     this.material.uniforms.time.value = this.time;
-    this.material.uniforms.uProgress.value = this.settings.progress;
+    // this.material.uniforms.uProgress.value = this.settings.progress;
+    this.tl.progress(this.settings.progress);
     this.mesh.rotation.x = this.time / 2000;
     this.mesh.rotation.y = this.time / 1000;
 
