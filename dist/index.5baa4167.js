@@ -649,8 +649,11 @@ class Sketch {
                 uTexture: {
                     value: new _three.TextureLoader().load((0, _texturePngDefault.default))
                 },
-                resolution: {
-                    value: new _three.Vector2()
+                uResolution: {
+                    value: new _three.Vector2(this.width, this.height)
+                },
+                uQuadSize: {
+                    value: new _three.Vector2(300, 300)
                 }
             },
             vertexShader: (0, _vertexGlslDefault.default),
@@ -33162,7 +33165,7 @@ function interceptControlUp(event) {
 module.exports = "#define GLSLIFY 1\nuniform float time;\nuniform float uProgress;\nuniform sampler2D uTexture;\n\nvarying vec2 vUv;\n\nvoid main() {\n  vec4 image = texture(uTexture, vUv);\n  gl_FragColor = vec4( vUv,0.,1.);\n  gl_FragColor = image;\n}";
 
 },{}],"fWka7":[function(require,module,exports) {
-module.exports = "#define GLSLIFY 1\nuniform float time;\nuniform float uProgress;\n\nvarying vec2 vUv;\n\nvoid main(){\n  vUv = uv;\n  vec4 defaultState = modelViewMatrix*vec4(position, 1.0);\n  vec4 fullScreenState = vec4(position, 1.0);\n\n  vec4 finalState = mix(defaultState,fullScreenState,uProgress);\n\n  gl_Position = projectionMatrix * finalState;\n} ";
+module.exports = "#define GLSLIFY 1\nuniform float time;\nuniform float uProgress;\nuniform vec2 uResolution;\nuniform vec2 uQuadSize;\n\nvarying vec2 vUv;\n\nvoid main(){\n  vUv = uv;\n  vec4 defaultState = modelViewMatrix*vec4(position, 1.0);\n  vec4 fullScreenState = vec4(position, 1.0);\n  fullScreenState.x *=uResolution.x/uQuadSize.x;\n  fullScreenState.y *=uResolution.y/uQuadSize.y;\n\n  vec4 finalState = mix(defaultState,fullScreenState,uProgress);\n\n  gl_Position = projectionMatrix * finalState;\n} ";
 
 },{}],"ik3Aw":[function(require,module,exports) {
 module.exports = require("d36b4277a2dab470").getBundleURL("1G2bZ") + "texture.ce44eba2.png" + "?" + Date.now();
