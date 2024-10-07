@@ -649,6 +649,9 @@ class Sketch {
                 uTexture: {
                     value: new _three.TextureLoader().load((0, _texturePngDefault.default))
                 },
+                uTextureSize: {
+                    value: new _three.Vector2(100, 100)
+                },
                 uResolution: {
                     value: new _three.Vector2(this.width, this.height)
                 },
@@ -33162,10 +33165,10 @@ function interceptControlUp(event) {
 }
 
 },{"three":"ktPTu","@parcel/transformer-js/src/esmodule-helpers.js":"fJZut"}],"6yofB":[function(require,module,exports) {
-module.exports = "#define GLSLIFY 1\nuniform float time;\nuniform float uProgress;\nuniform sampler2D uTexture;\n\nvarying vec2 vUv;\n\nvoid main() {\n  vec4 image = texture(uTexture, vUv);\n  gl_FragColor = vec4( vUv,0.,1.);\n  gl_FragColor = image;\n}";
+module.exports = "#define GLSLIFY 1\nuniform float time;\nuniform float uProgress;\nuniform vec2 uTextureSize;\nuniform sampler2D uTexture;\n\nvarying vec2 vUv;\nvarying vec2 vSize;\n\nvec2 getUV(vec2 uv, vec2 textureSize, vec2 quadSize) {\n  vec2 tempUV = uv - vec2(0.5);\n\n  float quadAspect = quadSize.x/quadSize.y;\n  float textureAspect = textureSize.x/textureSize.y;\n  if(quadAspect<textureAspect){\n    tempUV = tempUV*vec2(1.,1.);\n  } else {\n    tempUV = tempUV*vec2(1.,1.);\n  }\n  \n  tempUV += vec2(0.5);\n  return tempUV;\n}\n\nvoid main() {\n  vec2 correctUV = getUV(vUv,uTextureSize,vSize);\n  vec4 image = texture(uTexture,correctUV);\n  gl_FragColor = vec4( vUv,0.,1.);\n  gl_FragColor = image;\n}";
 
 },{}],"fWka7":[function(require,module,exports) {
-module.exports = "#define GLSLIFY 1\nuniform float time;\nuniform float uProgress;\nuniform vec2 uResolution;\nuniform vec2 uQuadSize;\n\nvarying vec2 vUv;\n\nvoid main(){\n  vUv = uv;\n  vec4 defaultState = modelViewMatrix*vec4(position, 1.0);\n  vec4 fullScreenState = vec4(position, 1.0);\n  fullScreenState.x *=uResolution.x/uQuadSize.x;\n  fullScreenState.y *=uResolution.y/uQuadSize.y;\n\n  vec4 finalState = mix(defaultState,fullScreenState,uProgress);\n\n  gl_Position = projectionMatrix * finalState;\n} ";
+module.exports = "#define GLSLIFY 1\nuniform float time;\nuniform float uProgress;\nuniform vec2 uResolution;\nuniform vec2 uQuadSize;\n\nvarying vec2 vUv;\nvarying vec2 vSize;\n\nvoid main(){\n  vUv = uv;\n  vec4 defaultState = modelViewMatrix*vec4(position, 1.0);\n  vec4 fullScreenState = vec4(position, 1.0);\n  fullScreenState.x *=uResolution.x/uQuadSize.x;\n  fullScreenState.y *=uResolution.y/uQuadSize.y;\n\n  vec4 finalState = mix(defaultState,fullScreenState,uProgress);\n\n  vSize = mix(uQuadSize,uResolution,uProgress);\n\n  gl_Position = projectionMatrix * finalState;\n} ";
 
 },{}],"ik3Aw":[function(require,module,exports) {
 module.exports = require("d36b4277a2dab470").getBundleURL("1G2bZ") + "texture.ce44eba2.png" + "?" + Date.now();
