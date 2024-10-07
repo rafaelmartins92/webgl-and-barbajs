@@ -668,24 +668,28 @@ class Sketch {
             fragmentShader: (0, _fragmentGlslDefault.default)
         });
         this.tl = (0, _gsapDefault.default).timeline().to(this.material.uniforms.uCorners.value, {
-            x: 1
+            x: 1,
+            duration: 1
         }).to(this.material.uniforms.uCorners.value, {
-            y: 1
-        }).to(this.material.uniforms.uCorners.value, {
-            z: 1
-        }).to(this.material.uniforms.uCorners.value, {
-            w: 1
-        });
+            y: 1,
+            duration: 1
+        }, 0.2).to(this.material.uniforms.uCorners.value, {
+            z: 1,
+            duration: 1
+        }, 0.4).to(this.material.uniforms.uCorners.value, {
+            w: 1,
+            duration: 1
+        }, 0.6);
         this.mesh = new _three.Mesh(this.geometry, this.material);
         this.scene.add(this.mesh);
         this.mesh.position.x = 300;
-        this.mesh.rotation.z = 0.5;
+    // this.mesh.rotation.z = 0.5;
     }
     render() {
         this.time += 0.05;
         this.material.uniforms.time.value = this.time;
-        // this.material.uniforms.uProgress.value = this.settings.progress;
-        this.tl.progress(this.settings.progress);
+        this.material.uniforms.uProgress.value = this.settings.progress;
+        // this.tl.progress(this.settings.progress);
         this.mesh.rotation.x = this.time / 2000;
         this.mesh.rotation.y = this.time / 1000;
         this.renderer.render(this.scene, this.camera);
@@ -33183,7 +33187,7 @@ function interceptControlUp(event) {
 module.exports = "#define GLSLIFY 1\nuniform float time;\nuniform float uProgress;\nuniform vec2 uTextureSize;\nuniform sampler2D uTexture;\n\nvarying vec2 vUv;\nvarying vec2 vSize;\n\nvec2 getUV(vec2 uv, vec2 textureSize, vec2 quadSize) {\n  vec2 tempUV = uv - vec2(0.5);\n\n  float quadAspect = quadSize.x/quadSize.y;\n  float textureAspect = textureSize.x/textureSize.y;\n  if(quadAspect<textureAspect){\n    tempUV = tempUV*vec2(quadAspect/textureAspect,1.);\n  } else {\n    tempUV = tempUV*vec2(1.,textureAspect/quadAspect);\n  }\n  \n  tempUV += vec2(0.5);\n  return tempUV;\n}\n\nvoid main() {\n  vec2 correctUV = getUV(vUv,uTextureSize,vSize);\n  vec4 image = texture(uTexture,correctUV);\n  gl_FragColor = vec4( vUv,0.,1.);\n  gl_FragColor = image;\n}";
 
 },{}],"fWka7":[function(require,module,exports) {
-module.exports = "#define GLSLIFY 1\nuniform float time;\nuniform float uProgress;\nuniform vec2 uResolution;\nuniform vec2 uQuadSize;\nuniform vec4 uCorners;\n\nvarying vec2 vUv;\nvarying vec2 vSize;\n\nvoid main(){\n  vUv = uv;\n  vec4 defaultState = modelViewMatrix*vec4(position, 1.0);\n  vec4 fullScreenState = vec4(position, 1.0);\n  fullScreenState.x *=uResolution.x/uQuadSize.x;\n  fullScreenState.y *=uResolution.y/uQuadSize.y;\n  float cornersProgress = mix(\n    mix(uCorners.z,uCorners.w,uv.x),\n    mix(uCorners.x,uCorners.y,uv.x),\n    uv.y\n  );\n\n  vec4 finalState = mix(defaultState,fullScreenState,cornersProgress);\n\n  vSize = mix(uQuadSize,uResolution,uProgress);\n\n  gl_Position = projectionMatrix * finalState;\n} ";
+module.exports = "#define GLSLIFY 1\nuniform float time;\nuniform float uProgress;\nuniform vec2 uResolution;\nuniform vec2 uQuadSize;\nuniform vec4 uCorners;\nvarying vec2 vUv;\nvarying vec2 vSize;\n\nvoid main(){\n  float PI = 3.14151926;\n  vUv = uv;\n  float sine = sin(PI*uProgress);\n  float waves = sine*0.1*sin(5.*length(uv)) + 15.*uProgress;\n  vec4 defaultState = modelViewMatrix*vec4(position, 1.0);\n  vec4 fullScreenState = vec4(position, 1.0);\n  fullScreenState.x *=uResolution.x/uQuadSize.x;\n  fullScreenState.y *=uResolution.y/uQuadSize.y;\n  float cornersProgress = mix(\n    mix(uCorners.z,uCorners.w,uv.x),\n    mix(uCorners.x,uCorners.y,uv.x),\n    uv.y\n  );\n\n  vec4 finalState = mix(defaultState,fullScreenState,uProgress + waves);\n\n  vSize = mix(uQuadSize,uResolution,uProgress);\n\n  gl_Position = projectionMatrix * finalState;\n} ";
 
 },{}],"ik3Aw":[function(require,module,exports) {
 module.exports = require("d36b4277a2dab470").getBundleURL("1G2bZ") + "texture.ce44eba2.png" + "?" + Date.now();
