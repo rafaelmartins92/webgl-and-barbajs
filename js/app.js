@@ -3,7 +3,7 @@ import ASScroll from '@ashthornton/asscroll';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import fragment from './shaders/fragment.glsl';
 import vertex from './shaders/vertex.glsl';
-import textureTest from '../img/texture.jpg';
+const texturePath = new URL('../img/texture.jpg', import.meta.url).href;
 import * as dat from 'dat.gui';
 import gsap from 'gsap';
 
@@ -63,16 +63,24 @@ export default class Sketch {
 
   addObjects() {
     this.geometry = new THREE.PlaneGeometry(300, 300, 100, 100);
+    
+    // Carrega a textura
+    const textureLoader = new THREE.TextureLoader();
+    const texture = textureLoader.load(texturePath, (texture) => {
+      this.material.uniforms.uTexture.value = texture;
+      this.material.uniforms.uTextureSize.value.set(texture.image.width, texture.image.height);
+    });
+
     this.material = new THREE.ShaderMaterial({
       // wireframe: true,
       uniforms: {
         time: { value: 1.0 },
         uProgress: { value: 0 },
-        uTexture: { value: new THREE.TextureLoader().load(textureTest) },
-        uTextureSize: { value: new THREE.Vector2(100,100) },
+        uTexture: { value: null }, // Será preenchido quando a textura carregar
+        uTextureSize: { value: new THREE.Vector2(1, 1) }, // Será atualizado quando a textura carregar
         uCorners: { value: new THREE.Vector4(0,0,0,0) },
-        uResolution: { value: new THREE.Vector2(this.width,this.height) },
-        uQuadSize: { value: new THREE.Vector2(300,300) },
+        uResolution: { value: new THREE.Vector2(this.width, this.height) },
+        uQuadSize: { value: new THREE.Vector2(300, 300) },
       },
       vertexShader: vertex,
       fragmentShader: fragment,
