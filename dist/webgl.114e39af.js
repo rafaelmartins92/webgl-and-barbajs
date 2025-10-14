@@ -849,10 +849,17 @@ class Sketch {
             };
         });
     }
+    setPosition() {
+        this.imageStore.forEach((o)=>{
+            o.mesh.position.x = -this.asscroll.currentPos + o.left - this.width / 2 + o.width / 2;
+            o.mesh.position.y = -o.top + this.height / 2 - o.height / 2;
+        });
+    }
     render() {
         this.time += 0.05;
         this.material.uniforms.time.value = this.time;
         // this.material.uniforms.uProgress.value = this.settings.progress;
+        this.setPosition();
         this.tl.progress(this.settings.progress);
         this.mesh.rotation.x = this.time / 2000;
         this.mesh.rotation.y = this.time / 1000;
@@ -34665,7 +34672,7 @@ function interceptControlUp(event) {
 }
 
 },{"three":"dsoTF","@parcel/transformer-js/src/esmodule-helpers.js":"1kyBK"}],"13ppz":[function(require,module,exports,__globalThis) {
-module.exports = "#define GLSLIFY 1\nuniform float time;\nuniform float uProgress;\nuniform vec2 uTextureSize;\nuniform sampler2D uTexture;\n\nvarying vec2 vUv;\nvarying vec2 vSize;\n\nvec2 getUV(vec2 uv, vec2 textureSize, vec2 quadSize) {\n  vec2 tempUV = uv - vec2(0.5);\n\n  float quadAspect = quadSize.x/quadSize.y;\n  float textureAspect = textureSize.x/textureSize.y;\n  if(quadAspect<textureAspect){\n    tempUV = tempUV*vec2(quadAspect/textureAspect,1.);\n  } else {\n    tempUV = tempUV*vec2(1.,textureAspect/quadAspect);\n  }\n  \n  tempUV += vec2(0.5);\n  return tempUV;\n}\n\nvoid main() {\n  vec2 correctUV = getUV(vUv,uTextureSize,vSize);\n  vec4 image = texture(uTexture,correctUV);\n  gl_FragColor = vec4( vUv,0.,1.);\n  gl_FragColor = image;\n}";
+module.exports = "#define GLSLIFY 1\nuniform float time;\nuniform float uProgress;\nuniform vec2 uTextureSize;\nuniform sampler2D uTexture;\n\nvarying vec2 vUv;\nvarying vec2 vSize;\n\nvec2 getUV(vec2 uv, vec2 textureSize, vec2 quadSize) {\n  vec2 tempUV = uv - vec2(0.5);\n\n  float quadAspect = quadSize.x/quadSize.y;\n  float textureAspect = textureSize.x/textureSize.y;\n  if(quadAspect<textureAspect){\n    tempUV = tempUV*vec2(quadAspect/textureAspect,1.);\n  } else {\n    tempUV = tempUV*vec2(1.,textureAspect/quadAspect);\n  }\n  \n  tempUV += vec2(0.5);\n  return tempUV;\n}\n\nvoid main() {\n  vec2 correctUV = getUV(vUv,uTextureSize,vSize);\n  vec4 image = texture(uTexture,correctUV);\n  gl_FragColor = vec4( vUv,0.,1.);\n  // gl_FragColor = image;\n}";
 
 },{}],"csZ9j":[function(require,module,exports,__globalThis) {
 module.exports = "#define GLSLIFY 1\nuniform float time;\nuniform float uProgress;\nuniform vec2 uResolution;\nuniform vec2 uQuadSize;\nuniform vec4 uCorners;\nvarying vec2 vUv;\nvarying vec2 vSize;\n\nvoid main(){\n  float PI = 3.14151926;\n  vUv = uv;\n  float sine = sin(PI*uProgress);\n  float waves = sine*0.1*sin(5.*length(uv)) + 15.*uProgress;\n  vec4 defaultState = modelMatrix*vec4(position, 1.0);\n  vec4 fullScreenState = vec4(position, 1.0);\n  fullScreenState.x *=uResolution.x;\n  fullScreenState.y *=uResolution.y;\n  float cornersProgress = mix(\n    mix(uCorners.z,uCorners.w,uv.x),\n    mix(uCorners.x,uCorners.y,uv.x),\n    uv.y\n  );\n\n  vec4 finalState = mix(defaultState,fullScreenState,cornersProgress);\n\n  vSize = mix(uQuadSize,uResolution,cornersProgress);\n\n  gl_Position = projectionMatrix * viewMatrix * finalState;\n} ";
