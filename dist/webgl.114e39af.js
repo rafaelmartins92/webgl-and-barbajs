@@ -773,7 +773,7 @@ class Sketch {
         window.addEventListener('resize', this.resize.bind(this));
     }
     addObjects() {
-        this.geometry = new _three.PlaneGeometry(300, 300, 100, 100);
+        this.geometry = new _three.PlaneGeometry(1, 1, 100, 100);
         // Carrega a textura
         const textureLoader = new _three.TextureLoader();
         const texture = textureLoader.load(texturePath, (texture)=>{
@@ -793,7 +793,7 @@ class Sketch {
                     value: null
                 },
                 uTextureSize: {
-                    value: new _three.Vector2(1, 1)
+                    value: new _three.Vector2(100, 100)
                 },
                 uCorners: {
                     value: new _three.Vector4(0, 0, 0, 0)
@@ -814,23 +814,46 @@ class Sketch {
         }).to(this.material.uniforms.uCorners.value, {
             y: 1,
             duration: 1
-        }, 0.2).to(this.material.uniforms.uCorners.value, {
+        }, 0.1).to(this.material.uniforms.uCorners.value, {
             z: 1,
             duration: 1
-        }, 0.4).to(this.material.uniforms.uCorners.value, {
+        }, 0.2).to(this.material.uniforms.uCorners.value, {
             w: 1,
             duration: 1
-        }, 0.6);
+        }, 0.3);
         this.mesh = new _three.Mesh(this.geometry, this.material);
-        this.scene.add(this.mesh);
+        this.mesh.scale.set(300, 300, 1);
+        // this.scene.add(this.mesh);
         this.mesh.position.x = 300;
-    // this.mesh.rotation.z = 0.5;
+        this.images = [
+            ...document.querySelectorAll('.js-image')
+        ];
+        this.materials = [];
+        this.imageStore = this.images.map((img)=>{
+            let bounds = img.getBoundingClientRect();
+            let m = this.material.clone();
+            this.materials.push(m);
+            let texture = new _three.Texture(img);
+            texture.needsUpdate = true;
+            m.uniforms.uTexture.value = texture;
+            let mesh = new _three.Mesh(this.geometry, m);
+            this.scene.add(mesh);
+            mesh.scale.set(bounds.width, bounds.height, 1);
+            return {
+                img: img,
+                mesh: mesh,
+                width: bounds.width,
+                height: bounds.height,
+                top: bounds.top,
+                left: bounds.left
+            };
+        });
     }
     render() {
         this.time += 0.05;
         this.material.uniforms.time.value = this.time;
-        this.material.uniforms.uProgress.value = this.settings.progress;
-        // this.tl.progress(this.settings.progress);
+        // this.material.uniforms.uProgress.value = this.settings.progress;
+        this.tl.progress(this.settings.progress);
         this.mesh.rotation.x = this.time / 2000;
         this.mesh.rotation.y = this.time / 1000;
         this.renderer.render(this.scene, this.camera);
@@ -34645,7 +34668,7 @@ function interceptControlUp(event) {
 module.exports = "#define GLSLIFY 1\nuniform float time;\nuniform float uProgress;\nuniform vec2 uTextureSize;\nuniform sampler2D uTexture;\n\nvarying vec2 vUv;\nvarying vec2 vSize;\n\nvec2 getUV(vec2 uv, vec2 textureSize, vec2 quadSize) {\n  vec2 tempUV = uv - vec2(0.5);\n\n  float quadAspect = quadSize.x/quadSize.y;\n  float textureAspect = textureSize.x/textureSize.y;\n  if(quadAspect<textureAspect){\n    tempUV = tempUV*vec2(quadAspect/textureAspect,1.);\n  } else {\n    tempUV = tempUV*vec2(1.,textureAspect/quadAspect);\n  }\n  \n  tempUV += vec2(0.5);\n  return tempUV;\n}\n\nvoid main() {\n  vec2 correctUV = getUV(vUv,uTextureSize,vSize);\n  vec4 image = texture(uTexture,correctUV);\n  gl_FragColor = vec4( vUv,0.,1.);\n  gl_FragColor = image;\n}";
 
 },{}],"csZ9j":[function(require,module,exports,__globalThis) {
-module.exports = "#define GLSLIFY 1\nuniform float time;\nuniform float uProgress;\nuniform vec2 uResolution;\nuniform vec2 uQuadSize;\nuniform vec4 uCorners;\nvarying vec2 vUv;\nvarying vec2 vSize;\n\nvoid main(){\n  float PI = 3.14151926;\n  vUv = uv;\n  float sine = sin(PI*uProgress);\n  float waves = sine*0.1*sin(5.*length(uv)) + 15.*uProgress;\n  vec4 defaultState = modelViewMatrix*vec4(position, 1.0);\n  vec4 fullScreenState = vec4(position, 1.0);\n  fullScreenState.x *=uResolution.x/uQuadSize.x;\n  fullScreenState.y *=uResolution.y/uQuadSize.y;\n  float cornersProgress = mix(\n    mix(uCorners.z,uCorners.w,uv.x),\n    mix(uCorners.x,uCorners.y,uv.x),\n    uv.y\n  );\n\n  vec4 finalState = mix(defaultState,fullScreenState,uProgress + waves);\n\n  vSize = mix(uQuadSize,uResolution,uProgress);\n\n  gl_Position = projectionMatrix * finalState;\n} ";
+module.exports = "#define GLSLIFY 1\nuniform float time;\nuniform float uProgress;\nuniform vec2 uResolution;\nuniform vec2 uQuadSize;\nuniform vec4 uCorners;\nvarying vec2 vUv;\nvarying vec2 vSize;\n\nvoid main(){\n  float PI = 3.14151926;\n  vUv = uv;\n  float sine = sin(PI*uProgress);\n  float waves = sine*0.1*sin(5.*length(uv)) + 15.*uProgress;\n  vec4 defaultState = modelMatrix*vec4(position, 1.0);\n  vec4 fullScreenState = vec4(position, 1.0);\n  fullScreenState.x *=uResolution.x;\n  fullScreenState.y *=uResolution.y;\n  float cornersProgress = mix(\n    mix(uCorners.z,uCorners.w,uv.x),\n    mix(uCorners.x,uCorners.y,uv.x),\n    uv.y\n  );\n\n  vec4 finalState = mix(defaultState,fullScreenState,cornersProgress);\n\n  vSize = mix(uQuadSize,uResolution,cornersProgress);\n\n  gl_Position = projectionMatrix * viewMatrix * finalState;\n} ";
 
 },{}],"329hF":[function(require,module,exports,__globalThis) {
 /**

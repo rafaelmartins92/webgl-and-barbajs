@@ -11,19 +11,19 @@ void main(){
   vUv = uv;
   float sine = sin(PI*uProgress);
   float waves = sine*0.1*sin(5.*length(uv)) + 15.*uProgress;
-  vec4 defaultState = modelViewMatrix*vec4(position, 1.0);
+  vec4 defaultState = modelMatrix*vec4(position, 1.0);
   vec4 fullScreenState = vec4(position, 1.0);
-  fullScreenState.x *=uResolution.x/uQuadSize.x;
-  fullScreenState.y *=uResolution.y/uQuadSize.y;
+  fullScreenState.x *=uResolution.x;
+  fullScreenState.y *=uResolution.y;
   float cornersProgress = mix(
     mix(uCorners.z,uCorners.w,uv.x),
     mix(uCorners.x,uCorners.y,uv.x),
     uv.y
   );
 
-  vec4 finalState = mix(defaultState,fullScreenState,uProgress + waves);
+  vec4 finalState = mix(defaultState,fullScreenState,cornersProgress);
 
-  vSize = mix(uQuadSize,uResolution,uProgress);
+  vSize = mix(uQuadSize,uResolution,cornersProgress);
 
-  gl_Position = projectionMatrix * finalState;
+  gl_Position = projectionMatrix * viewMatrix * finalState;
 } 
