@@ -16,7 +16,7 @@ export default class Sketch {
     this.camera = new THREE.PerspectiveCamera(80, this.width / this.height, 10, 1000);
     this.camera.position.z = 600;
 
-    this.camera.fov = 2*Math.atan((this.height/2) / 600) * 180/Math.PI;
+    this.camera.fov = 2 * Math.atan((this.height / 2) / 600) * 180 / Math.PI;
 
     this.scene = new THREE.Scene();
 
@@ -35,9 +35,9 @@ export default class Sketch {
     this.asscroll.enable({
       horizontalScroll: true
     });
-    
+
     this.time = 0;
-    this.setupSettings();
+    // this.setupSettings();
     this.addObjects();
     this.resize();
     this.render();
@@ -49,7 +49,7 @@ export default class Sketch {
       progress: 0
     }
     this.gui = new dat.GUI();
-    this.gui.add(this.settings,"progress",0,1,0.001);
+    this.gui.add(this.settings, "progress", 0, 1, 0.001);
   }
 
   resize() {
@@ -59,7 +59,7 @@ export default class Sketch {
     this.camera.aspect = this.width / this.height;
     this.camera.updateProjectionMatrix();
 
-    this.camera.fov = 2*Math.atan((this.height/2) / 600) * 180/Math.PI;
+    this.camera.fov = 2 * Math.atan((this.height / 2) / 600) * 180 / Math.PI;
 
     this.materials.forEach((m) => {
       m.uniforms.uResolution.value.x = this.width;
@@ -88,7 +88,7 @@ export default class Sketch {
 
   addObjects() {
     this.geometry = new THREE.PlaneGeometry(1, 1, 100, 100);
-    
+
     // Carrega a textura
     const textureLoader = new THREE.TextureLoader();
     const texture = textureLoader.load(texturePath, (texture) => {
@@ -103,7 +103,7 @@ export default class Sketch {
         uProgress: { value: 0 },
         uTexture: { value: null }, // Será preenchido quando a textura carregar
         uTextureSize: { value: new THREE.Vector2(100, 100) }, // Será atualizado quando a textura carregar
-        uCorners: { value: new THREE.Vector4(0,0,0,0) },
+        uCorners: { value: new THREE.Vector4(0, 0, 0, 0) },
         uResolution: { value: new THREE.Vector2(this.width, this.height) },
         uQuadSize: { value: new THREE.Vector2(300, 300) },
       },
@@ -111,19 +111,13 @@ export default class Sketch {
       fragmentShader: fragment,
     });
 
-    this.tl = gsap.timeline()
-      .to(this.material.uniforms.uCorners.value, {x:1, duration: 1})
-      .to(this.material.uniforms.uCorners.value, {y:1, duration: 1},0.1)
-      .to(this.material.uniforms.uCorners.value, {z:1, duration: 1},0.2)
-      .to(this.material.uniforms.uCorners.value, {w:1, duration: 1},0.3)
-
     this.mesh = new THREE.Mesh(this.geometry, this.material);
     this.mesh.scale.set(300, 300, 1);
     // this.scene.add(this.mesh);
     this.mesh.position.x = 300;
 
     this.images = [...document.querySelectorAll('.js-image')];
-    
+
     this.imageStore = this.images.map((img) => {
       let bounds = img.getBoundingClientRect();
       let m = this.material.clone();
@@ -133,10 +127,26 @@ export default class Sketch {
 
       m.uniforms.uTexture.value = texture;
 
+      img.addEventListener('mouseover', () => {
+        this.tl = gsap.timeline()
+          .to(m.uniforms.uCorners.value, { x: 1, duration: 0.4 })
+          .to(m.uniforms.uCorners.value, { y: 1, duration: 0.4 }, 0.1)
+          .to(m.uniforms.uCorners.value, { z: 1, duration: 0.4 }, 0.2)
+          .to(m.uniforms.uCorners.value, { w: 1, duration: 0.4 }, 0.3)
+      });
+
+      img.addEventListener('mouseout', () => {
+        this.tl = gsap.timeline()
+          .to(m.uniforms.uCorners.value, { x: 0, duration: 0.4 })
+          .to(m.uniforms.uCorners.value, { y: 0, duration: 0.4 }, 0.1)
+          .to(m.uniforms.uCorners.value, { z: 0, duration: 0.4 }, 0.2)
+          .to(m.uniforms.uCorners.value, { w: 0, duration: 0.4 }, 0.3)
+      });
+
       let mesh = new THREE.Mesh(this.geometry, m);
       this.scene.add(mesh);
       mesh.scale.set(bounds.width, bounds.height, 1);
-      
+
       return {
         img: img,
         mesh: mesh,
@@ -150,8 +160,8 @@ export default class Sketch {
 
   setPosition() {
     this.imageStore.forEach((o) => {
-      o.mesh.position.x = -this.asscroll.currentPos + o.left - this.width/2 + o.width/2;
-      o.mesh.position.y = -o.top + this.height/2 - o.height/2;
+      o.mesh.position.x = -this.asscroll.currentPos + o.left - this.width / 2 + o.width / 2;
+      o.mesh.position.y = -o.top + this.height / 2 - o.height / 2;
     });
   }
 
@@ -161,7 +171,7 @@ export default class Sketch {
     // this.material.uniforms.uProgress.value = this.settings.progress;
     this.asscroll.update();
     this.setPosition();
-    this.tl.progress(this.settings.progress);
+    // this.tl.progress(this.settings.progress);
     this.mesh.rotation.x = this.time / 2000;
     this.mesh.rotation.y = this.time / 1000;
 
