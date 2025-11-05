@@ -735,7 +735,7 @@ class Sketch {
         this.container = options.domElement;
         this.width = this.container.offsetWidth;
         this.height = this.container.offsetHeight;
-        this.camera = new _three.PerspectiveCamera(80, this.width / this.height, 10, 1000);
+        this.camera = new _three.PerspectiveCamera(30, this.width / this.height, 10, 1000);
         this.camera.position.z = 600;
         this.camera.fov = 2 * Math.atan(this.height / 2 / 600) * 180 / Math.PI;
         this.scene = new _three.Scene();
@@ -751,7 +751,7 @@ class Sketch {
             disableRaf: true
         });
         this.asscroll.enable({
-            horizontalScroll: true
+            horizontalScroll: !document.body.classList.contains('b-inside')
         });
         this.time = 0;
         // this.setupSettings();
@@ -762,7 +762,78 @@ class Sketch {
         this.setupResize();
     }
     barba() {
-        (0, _coreDefault.default).init({});
+        let that = this;
+        (0, _coreDefault.default).init({
+            transitions: [
+                {
+                    name: 'from-home-transition',
+                    from: {
+                        namespace: [
+                            'home'
+                        ]
+                    },
+                    leave (data) {
+                        that.asscroll.disable();
+                        return (0, _gsapDefault.default).timeline().to(data.current.container, {
+                            opacity: 0
+                        });
+                    },
+                    enter (data) {
+                        that.asscroll = new (0, _asscrollDefault.default)({
+                            disableRaf: true,
+                            containerElement: data.next.container.querySelector('[asscroll-container]')
+                        });
+                        that.asscroll.enable({
+                            newScrollContainer: data.next.container.querySelector('.scroll-wrap')
+                        });
+                        return (0, _gsapDefault.default).timeline().from(data.next.container, {
+                            opacity: 0,
+                            onComplete: ()=>{
+                                that.container.style.display = 'none';
+                            }
+                        });
+                    }
+                },
+                {
+                    name: 'from-inside-page-transition',
+                    from: {
+                        namespace: [
+                            'inside'
+                        ]
+                    },
+                    leave (data) {
+                        that.asscroll.disable();
+                        return (0, _gsapDefault.default).timeline().to('.curtain', {
+                            duration: 0.3,
+                            y: 0
+                        }).to(data.current.container, {
+                            opacity: 0
+                        });
+                    },
+                    enter (data) {
+                        that.asscroll = new (0, _asscrollDefault.default)({
+                            disableRaf: true,
+                            containerElement: data.next.container.querySelector('[asscroll-container]')
+                        });
+                        that.asscroll.enable({
+                            horizontalScroll: true,
+                            newScrollContainer: data.next.container.querySelector('.scroll-wrap')
+                        });
+                        that.addObjects();
+                        that.resize();
+                        return (0, _gsapDefault.default).timeline().to('.curtain', {
+                            duration: 0.3,
+                            y: '-100%'
+                        }).from(data.next.container, {
+                            opacity: 0,
+                            onComplete: ()=>{
+                                that.container.style.display = 'none';
+                            }
+                        });
+                    }
+                }
+            ]
+        });
     }
     setupSettings() {
         this.settings = {
@@ -915,7 +986,7 @@ new Sketch({
     domElement: document.getElementById('container')
 });
 
-},{"three":"dsoTF","@ashthornton/asscroll":"6mAC0","three/examples/jsm/controls/OrbitControls.js":"45ipX","./shaders/fragment.glsl":"13ppz","./shaders/vertex.glsl":"csZ9j","dat.gui":"329hF","gsap":"9F7Z6","@parcel/transformer-js/src/esmodule-helpers.js":"1kyBK","2d25eb3d7bc21e3e":"dKdn7","@barba/core":"pKfSe"}],"dsoTF":[function(require,module,exports,__globalThis) {
+},{"three":"dsoTF","@ashthornton/asscroll":"6mAC0","three/examples/jsm/controls/OrbitControls.js":"45ipX","./shaders/fragment.glsl":"13ppz","./shaders/vertex.glsl":"csZ9j","2d25eb3d7bc21e3e":"dKdn7","dat.gui":"329hF","gsap":"9F7Z6","@barba/core":"pKfSe","@parcel/transformer-js/src/esmodule-helpers.js":"1kyBK"}],"dsoTF":[function(require,module,exports,__globalThis) {
 /**
  * @license
  * Copyright 2010-2024 Three.js Authors
@@ -34720,6 +34791,9 @@ module.exports = "#define GLSLIFY 1\nuniform float time;\nuniform float uProgres
 },{}],"csZ9j":[function(require,module,exports,__globalThis) {
 module.exports = "#define GLSLIFY 1\nuniform float time;\nuniform float uProgress;\nuniform vec2 uResolution;\nuniform vec2 uQuadSize;\nuniform vec4 uCorners;\nvarying vec2 vUv;\nvarying vec2 vSize;\n\nvoid main(){\n  float PI = 3.14151926;\n  vUv = uv;\n  float sine = sin(PI*uProgress);\n  float waves = sine*0.1*sin(5.*length(uv)) + 15.*uProgress;\n  vec4 defaultState = modelMatrix*vec4(position, 1.0);\n  vec4 fullScreenState = vec4(position, 1.0);\n  fullScreenState.x *=uResolution.x;\n  fullScreenState.y *=uResolution.y;\n  fullScreenState.z *=uQuadSize.x;\n  float cornersProgress = mix(\n    mix(uCorners.z,uCorners.w,uv.x),\n    mix(uCorners.x,uCorners.y,uv.x),\n    uv.y\n  );\n\n  vec4 finalState = mix(defaultState,fullScreenState,cornersProgress);\n\n  vSize = mix(uQuadSize,uResolution,cornersProgress);\n\n  gl_Position = projectionMatrix * viewMatrix * finalState;\n} ";
 
+},{}],"dKdn7":[function(require,module,exports,__globalThis) {
+module.exports = module.bundle.resolve("texture.4914599d.jpg") + "?" + Date.now();
+
 },{}],"329hF":[function(require,module,exports,__globalThis) {
 /**
  * dat-gui JavaScript Controller Library
@@ -41035,10 +41109,7 @@ var CSSPlugin = {
 });
 (0, _gsapCoreJs.gsap).registerPlugin(CSSPlugin);
 
-},{"./gsap-core.js":"evdHe","@parcel/transformer-js/src/esmodule-helpers.js":"1kyBK"}],"dKdn7":[function(require,module,exports,__globalThis) {
-module.exports = module.bundle.resolve("texture.4914599d.jpg") + "?" + Date.now();
-
-},{}],"pKfSe":[function(require,module,exports,__globalThis) {
+},{"./gsap-core.js":"evdHe","@parcel/transformer-js/src/esmodule-helpers.js":"1kyBK"}],"pKfSe":[function(require,module,exports,__globalThis) {
 !function(t, n) {
     module.exports = n();
 }(this, function() {

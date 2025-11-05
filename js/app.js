@@ -14,7 +14,7 @@ export default class Sketch {
     this.width = this.container.offsetWidth;
     this.height = this.container.offsetHeight;
 
-    this.camera = new THREE.PerspectiveCamera(80, this.width / this.height, 10, 1000);
+    this.camera = new THREE.PerspectiveCamera(30, this.width / this.height, 10, 1000);
     this.camera.position.z = 600;
 
     this.camera.fov = 2 * Math.atan((this.height / 2) / 600) * 180 / Math.PI;
@@ -34,7 +34,7 @@ export default class Sketch {
       disableRaf: true
     });
     this.asscroll.enable({
-      horizontalScroll: true
+      horizontalScroll: !document.body.classList.contains('b-inside')
     });
 
     this.time = 0;
@@ -49,8 +49,81 @@ export default class Sketch {
   }
 
   barba() {
+    let that = this;
     barba.init({
-
+      transitions: [
+        {
+          name: 'from-home-transition',
+          from: {
+            namespace: ['home']
+          },
+          leave(data) {
+            that.asscroll.disable();
+            return gsap.timeline()
+            .to(data.current.container, {
+              opacity: 0,
+            });
+          },
+          enter(data) {
+            that.asscroll = new ASScroll({
+              disableRaf: true,
+              containerElement: data.next.container.querySelector('[asscroll-container]')
+            });
+            that.asscroll.enable({
+              newScrollContainer: data.next.container.querySelector('.scroll-wrap')
+            });
+            return gsap.timeline()
+            .from(data.next.container, {
+              opacity: 0,
+              onComplete: () => {
+                that.container.style.display = 'none';
+              }
+            });
+          }
+        },
+        {
+          name: 'from-inside-page-transition',
+          from: {
+            namespace: ['inside']
+          },
+          leave(data) {
+            that.asscroll.disable();
+            return gsap.timeline()
+            .to('.curtain', {
+              duration: 0.3,
+              y: 0,
+            })
+            .to(data.current.container, {
+              opacity: 0,
+            });
+          },
+          enter(data) {
+            that.asscroll = new ASScroll({
+              disableRaf: true,
+              containerElement: data.next.container.querySelector('[asscroll-container]')
+            });
+            that.asscroll.enable({
+              horizontalScroll: true,
+              newScrollContainer: data.next.container.querySelector('.scroll-wrap')
+            });
+            
+            that.addObjects();
+            that.resize();
+            
+            return gsap.timeline()
+            .to('.curtain', {
+              duration: 0.3,
+              y: '-100%',
+            })
+            .from(data.next.container, {
+              opacity: 0,
+              onComplete: () => {
+                that.container.style.display = 'none';
+              }
+            });
+          }
+        }
+      ]
     })
   }
 

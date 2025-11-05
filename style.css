@@ -2,20 +2,11 @@
   margin: 0;
   padding: 0;
 }
-html, body {
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-}
-
 body {
   background: #000;
   font-family: 'Coustard', serif;
   font-weight: 400;
   color: #fff;
-  margin: 0;
-  padding: 0;
-  position: relative;
 }
 .header {
   font-weight: 900;
